@@ -16,11 +16,11 @@ cUserId ✅ (Required) cUserId
 
 passportDeviceId (Optional)
 
-🧾 Example cookie string
+🧾 Example COOKIE string
 Put all values in a single line, like this:
-`new_bbs_serviceToken=abc123xyz456; cUserId=7891011; passportDeviceId=device-xyz;`
+`new_bbs_serviceToken=abc123xyz456; cUserId=7891011; passportDeviceId=device-xyz`
 If you don't see passportDeviceId, just leave it out:
-`cUserId=w27I4BueIpBn3hY_Et1eG7SunRr; new_bbs_serviceToken=asj5v6aLFf3k6RLodK82a689L1ENvGmtUbOIYfWa7urpJ50W%2Fk6VrG4imGvL51qtAkevNsHVHdg9AaCE7u2Jqw2MjESBykR8MdWx%2FwZOmFC3ixPINfXPk7zpv45hHcTqTqcL5TpQHQQvRiwd7N1B2lkc9o0Z5RS32UzH6GIILNc%3B;`
+`cUserId=w27I4BueIpBn3hY_Et1eG7SunRr; new_bbs_serviceToken=asj5v6aLFf3k6RLodK82a689L1ENvGmtUbOIYfWa7urpJ50W%2Fk6VrG4imGvL51qtAkevNsHVHdg9AaCE7u2Jqw2MjESBykR8MdWx%2FwZOmFC3ixPINfXPk7zpv45hHcTqTqcL5TpQHQQvRiwd7N1B2lkc9o0Z5RS32UzH6GIILNc%3B`
 
 ✅ Step 2: Add the cookie to GitHub Secrets
 Go to your forked repository → Settings → Secrets and variables → Actions.
