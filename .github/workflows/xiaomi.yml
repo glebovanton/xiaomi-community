@@ -1,0 +1,25 @@
+name: Xiaomi Community AutoTask
+
+on:
+  schedule:
+    - cron: '6 16 * * *'  # 00:06 China
+    - cron: '9 16 * * *'
+    - cron: '3 16 * * *'
+    - cron: '7 16 * * *'
+  workflow_dispatch:
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y nodejs
+          pip install -r requirements.txt
+      - name: Script run
+        env:
+          XIAOMI_USERNAME: ${{ secrets.XIAOMI_USERNAME }}
+          XIAOMI_PASSWORD: ${{ secrets.XIAOMI_PASSWORD }}
+        run: python xiaomi.py
