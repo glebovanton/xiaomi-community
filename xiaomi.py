@@ -16,7 +16,9 @@ for item in cookie_items:
 headers = {
     'User-Agent': 'Mozilla/5.0 (Android 12; Mobile; MIUI) AppleWebKit/537.36 Chrome/110.0.0.0 Mobile Safari/537.36',
     'Accept': 'application/json',
-    'Cookie': cookie_str
+    'Cookie': cookie_str,
+    'Content-Type': 'application/x-www-form-urlencoded',
+    'Referer': 'https://c.mi.com/global/'
 }
 
 comments = [
