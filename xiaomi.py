@@ -5,9 +5,13 @@ import random
 import os
 
 # Load cookies from environment (set in GitHub Actions secrets)
-cookie_str = os.environ.get("COOKIE")
+cookie_str = os.environ.get("COOKIE", "")
 cookie_items = cookie_str.strip().split(";")
-cookies = {item.split("=")[0].strip(): item.split("=")[1].strip() for item in cookie_items}
+cookies = {}
+for item in cookie_items:
+    if "=" in item:
+        key, value = item.split("=", 1)
+        cookies[key.strip()] = value.strip()
 
 headers = {
     'User-Agent': 'Mozilla/5.0 (Android 12; Mobile; MIUI) AppleWebKit/537.36 Chrome/110.0.0.0 Mobile Safari/537.36',
