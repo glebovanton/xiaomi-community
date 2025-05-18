@@ -1,6 +1,10 @@
+require('dotenv').config();
 const puppeteer = require('puppeteer');
 
 (async () => {
+    if (!process.env.CUSERID || !process.env.TOKEN) {
+        throw new Error('❌ CUSERID или TOKEN не заданы. Установи переменные окружения!');
+    }
     const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox'] });
     const page = await browser.newPage();
 
