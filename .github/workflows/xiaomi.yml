@@ -1,28 +1,31 @@
-name: Xiaomi Community AutoTask
+name: Xiaomi Browser Automation
 
 on:
-  schedule:
-    - cron: '6 16 * * *'  # 00:06 CST
-    - cron: '9 16 * * *'
-    - cron: '3 16 * * *'
-    - cron: '7 16 * * *'
   workflow_dispatch:
+  schedule:
+    - cron: '6 16 * * *'   # 00:03 CST
+    - cron: '9 16 * * *'   # 00:06 CST
+    - cron: '3 16 * * *'   # 00:07 CST
+    - cron: '7 16 * * *'   # 00:09 CST
 
 jobs:
-  run:
+  puppeteer:
     runs-on: ubuntu-latest
-    env:
-      COOKIE: ${{ secrets.COOKIE }}
+
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-      - name: Setup Python
-        uses: actions/setup-python@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
         with:
-          python-version: '3.10'
+          node-version: '20'
 
-      - name: Install dependencies
-        run: pip install requests
+      - name: Install Puppeteer
+        run: npm install puppeteer
 
-      - name: Run Xiaomi script
-        run: python xiaomi.py
+      - name: Run Xiaomi Puppeteer Script
+        run: node xiaomi.js
+        env:
+          CUSERID: ${{ secrets.CUSERID }}
+          TOKEN: ${{ secrets.TOKEN }}

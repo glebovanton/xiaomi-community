@@ -1,0 +1,89 @@
+const puppeteer = require('puppeteer');
+
+(async () => {
+    const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox'] });
+    const page = await browser.newPage();
+
+    // Авторизационные куки
+    await page.setCookie(
+        {
+            name: 'cUserId',
+            value: process.env.CUSERID,
+            domain: '.mi.com',
+            path: '/',
+            httpOnly: false,
+            secure: true
+        },
+        {
+            name: 'new_bbs_serviceToken',
+            value: process.env.TOKEN,
+            domain: '.mi.com',
+            path: '/',
+            httpOnly: false,
+            secure: true
+        }
+    );
+
+    // Перейти на главную страницу постов
+    await page.goto('https://c.mi.com/global/forum-type/ALL', { waitUntil: 'networkidle2' });
+
+    // Кликнуть по "Latest post"
+    await page.waitForSelector('div.desc', { timeout: 10000 });
+    await page.click('div.desc');
+    await page.waitForTimeout(2000);
+
+    // Лайкнуть два последних поста
+    const likeButtons = await page.$$('div.text-box.icon-like');
+    for (let i = 0; i < Math.min(3, likeButtons.length); i++) {
+        try {
+            await likeButtons[i].click();
+            await page.waitForTimeout(1000);
+        } catch (err) {
+            console.error(`Не удалось лайкнуть пост ${i + 1}`, err);
+        }
+    }
+
+    // Открыть два последних поста, прочитать, прокомментировать и зафоловить
+    const postLinks = await page.$$('a.forumSubLi.item-enter-done');
+    for (let i = 0; i < Math.min(3, postLinks.length); i++) {
+        const href = await postLinks[i].evaluate(a => a.getAttribute('href'));
+        const postUrl = `https://c.mi.com${href}`;
+
+        await page.goto(postUrl, { waitUntil: 'networkidle2' });
+        await page.waitForTimeout(3000);
+
+        // Прокрутка вниз (эмуляция прочтения)
+        await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+        await page.waitForTimeout(2000);
+
+        // Написать комментарий
+        try {
+            await page.click('div.ql-editor');
+            const comments = [
+                'Wow', 'Nice', 'Awesome', 'Cool', 'Great', 'Top', 'Love', 'Thanks', 'Useful', 'Helpful',
+                'Вау', 'Красиво', 'Инфа', 'Супер', 'Годно', 'Лайк', 'Круто', 'Годнота', 'Интересно', 'Полезно',
+                'Неверагодна', 'Цудоўна', 'Класна', 'Дзякуй', 'Прыгожа', 'Шчыра', 'Добра', 'Чудо', 'Залётна', 'Сонечна'
+            ];
+            const comment = comments[Math.floor(Math.random() * comments.length)];
+            await page.keyboard.type(comment);
+            await page.click('div.ql-send-btn');
+            console.log(`✅ Комментарий к посту #${i + 1} отправлен`);
+        } catch (err) {
+            console.error(`❌ Ошибка при комментировании поста #${i + 1}`, err);
+        }
+
+        // Зафоловить юзера
+        try {
+            await page.click('div.follow-btn');
+            console.log(`➕ Подписка на автора поста #${i + 1}`);
+        } catch (err) {
+            console.error(`⚠️ Не удалось подписаться на автора поста #${i + 1}`, err);
+        }
+
+        // Вернуться назад
+        await page.goBack({ waitUntil: 'networkidle2' });
+        await page.waitForTimeout(2000);
+    }
+
+    await browser.close();
+})();
