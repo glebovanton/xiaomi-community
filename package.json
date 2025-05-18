@@ -7,6 +7,7 @@
     "start": "node xiaomi.js"
   },
   "dependencies": {
+    "dotenv": "^16.5.0",
     "puppeteer": "^22.15.0"
   }
 }
