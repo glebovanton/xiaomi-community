@@ -5,8 +5,23 @@ const puppeteer = require('puppeteer');
     if (!process.env.CUSERID || !process.env.TOKEN) {
         throw new Error('❌ CUSERID или TOKEN не заданы. Установи переменные окружения!');
     }
-    const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox'] });
+
+    const browser = await puppeteer.launch({
+        headless: false,
+        args: ['--no-sandbox'],
+        defaultViewport: {
+            width: 390,
+            height: 844, // как Redmi Note 12 Pro
+            isMobile: true,
+            hasTouch: true
+        }
+    });
+
     const page = await browser.newPage();
+
+    await page.setUserAgent(
+        'Mozilla/5.0 (Linux; Android 12; Redmi Note 12 Pro) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Mobile Safari/537.36'
+    );
 
     // Авторизационные куки
     await page.setCookie(
@@ -36,7 +51,7 @@ const puppeteer = require('puppeteer');
     await page.click('div.desc');
     await new Promise(resolve => setTimeout(resolve, 2000));
 
-    // Лайкнуть два последних поста
+    // Лайкнуть 3 последних поста
     const likeButtons = await page.$$('div.text-box.icon-like');
     for (let i = 0; i < Math.min(3, likeButtons.length); i++) {
         try {
@@ -47,7 +62,7 @@ const puppeteer = require('puppeteer');
         }
     }
 
-    // Открыть два последних поста, прочитать, прокомментировать и зафоловить
+    // Открыть 3 последних поста, прочитать, прокомментировать и зафоловить
     const postLinks = await page.$$('a.forumSubLi.item-enter-done');
     for (let i = 0; i < Math.min(3, postLinks.length); i++) {
         const href = await postLinks[i].evaluate(a => a.getAttribute('href'));
@@ -56,11 +71,9 @@ const puppeteer = require('puppeteer');
         await page.goto(postUrl, { waitUntil: 'networkidle2' });
         await new Promise(resolve => setTimeout(resolve, 3000));
 
-        // Прокрутка вниз (эмуляция прочтения)
         await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
         await new Promise(resolve => setTimeout(resolve, 2000));
 
-        // Написать комментарий
         try {
             await page.click('div.ql-editor');
             const comments = [
@@ -76,7 +89,6 @@ const puppeteer = require('puppeteer');
             console.error(`❌ Ошибка при комментировании поста #${i + 1}`, err);
         }
 
-        // Зафоловить юзера
         try {
             await page.click('div.follow-btn');
             console.log(`➕ Подписка на автора поста #${i + 1}`);
@@ -84,7 +96,6 @@ const puppeteer = require('puppeteer');
             console.error(`⚠️ Не удалось подписаться на автора поста #${i + 1}`, err);
         }
 
-        // Вернуться назад
         await page.goBack({ waitUntil: 'networkidle2' });
         await new Promise(resolve => setTimeout(resolve, 2000));
     }
