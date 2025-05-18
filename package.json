@@ -1,20 +1,12 @@
 {
-  "name": "xiaomi-community",
+  "name": "xiaomi-automation",
   "version": "1.0.0",
-  "description": "🔐 How to Insert Cookies for Authentication This script uses your Xiaomi Community cookies for login — no username or password required. Here's how to get and use them:",
-  "main": "gap.js",
+  "description": "Puppeteer script for Xiaomi Community automation",
+  "main": "xiaomi.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node xiaomi.js"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://glebovanton@github.com/glebovanton/xiaomi-community.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/glebovanton/xiaomi-community/issues"
-  },
-  "homepage": "https://github.com/glebovanton/xiaomi-community#readme"
+  "dependencies": {
+    "puppeteer": "^22.15.0"
+  }
 }
