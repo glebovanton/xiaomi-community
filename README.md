@@ -38,4 +38,6 @@ The script will automatically use your cookie to run daily tasks (check-in, like
 
 
 - Debug on browser 
+`npm i`
+`npm start`
 `node xiaomi.js`
