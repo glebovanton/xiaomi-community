@@ -1,4 +1,4 @@
-name: Xiaomi Browser Automation
+name: Xiaomi Browser Automation Puppeteer
 
 on:
   workflow_dispatch:
