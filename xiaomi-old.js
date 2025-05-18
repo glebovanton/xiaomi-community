@@ -5,9 +5,11 @@ const path = require('path');
 
 const isLocal = process.argv.includes('--log') || process.argv.includes('--local');
 
+// Создание каталога logs/ если режим локальный
 const logDir = path.resolve(__dirname, 'logs');
 if (isLocal && !fs.existsSync(logDir)) fs.mkdirSync(logDir);
 
+// Имя лог-файла по дате
 const logFile = path.join(logDir, `${new Date().toISOString().slice(0, 10)}.log`);
 
 function log(message) {
@@ -20,8 +22,8 @@ function log(message) {
 }
 
 (async () => {
-    if (!process.env.XIAOMI_USER || !process.env.XIAOMI_PASS) {
-        throw new Error('❌ XIAOMI_USER или XIAOMI_PASS не заданы. Установи переменные окружения!');
+    if (!process.env.CUSERID || !process.env.TOKEN) {
+        throw new Error('❌ CUSERID или TOKEN не заданы. Установи переменные окружения!');
     }
 
     const browser = await puppeteer.launch({
@@ -29,7 +31,7 @@ function log(message) {
         args: ['--no-sandbox'],
         defaultViewport: {
             width: 390,
-            height: 844,
+            height: 844, // as Redmi Note 12 Pro
             isMobile: true,
             hasTouch: true
         }
@@ -41,46 +43,46 @@ function log(message) {
         'Mozilla/5.0 (Linux; Android 12; Redmi Note 12 Pro) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Mobile Safari/537.36'
     );
 
-    // Переход на страницу входа и авторизация
+    // Авторизационные куки
+    await page.setCookie(
+        {
+            name: 'cUserId',
+            value: process.env.CUSERID,
+            domain: '.mi.com',
+            path: '/',
+            httpOnly: false,
+            secure: true
+        },
+        {
+            name: 'new_bbs_serviceToken',
+            value: process.env.TOKEN,
+            domain: '.mi.com',
+            path: '/',
+            httpOnly: false,
+            secure: true
+        }
+    );
+
+    // Перейти на главную страницу постов
     await page.goto('https://c.mi.com/global/forum-type/ALL', { waitUntil: 'networkidle2' });
 
-    // Открытие бокового меню
-    await page.waitForSelector('i.svg-icon-box.navM-menu', { timeout: 10000 });
-    await page.click('i.svg-icon-box.navM-menu');
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    const loginBtn = await page.$('div.loginUser');
-    if (loginBtn) {
-        await loginBtn.click();
-        await page.waitForNavigation({ waitUntil: 'networkidle2' });
-    }
-
-    if (page.url().includes('account.xiaomi.com')) {
-        await page.waitForSelector('input[name="account"]', { timeout: 20000 });
-        await page.type('input[name="account"]', process.env.XIAOMI_USER, { delay: 100 });
-        await page.type('input[name="password"]', process.env.XIAOMI_PASS, { delay: 100 });
-        await page.click('button[type="submit"]');
-        await page.waitForNavigation({ waitUntil: 'networkidle2' });
-        log('✅ Авторизация завершена');
-    }
-
-    // Перейти на главную страницу постов снова после логина
-    await page.goto('https://c.mi.com/global/forum-type/ALL', { waitUntil: 'networkidle2' });
-
+    Кликнуть по "Latest post"
     await page.waitForSelector('div.desc', { timeout: 20000 });
     await page.click('div.desc');
     await new Promise(resolve => setTimeout(resolve, 2000));
 
+    // Лайкнуть 3 последних поста
     const likeButtons = await page.$$('div.text-box.icon-like');
     for (let i = 0; i < Math.min(3, likeButtons.length); i++) {
         try {
             await likeButtons[i].click();
             await new Promise(resolve => setTimeout(resolve, 1000));
         } catch (err) {
-            log(`Не удалось лайкнуть пост ${i + 1}: ${err}`);
+            log(`Не удалось лайкнуть пост ${i + 1}`, err);
         }
     }
 
+    // Открыть 3 последних поста, прочитать, прокомментировать и зафоловить
     const postLinks = await page.$$('a.forumSubLi.item-enter-done');
     for (let i = 0; i < Math.min(3, postLinks.length); i++) {
         const href = await postLinks[i].evaluate(a => a.getAttribute('href'));
@@ -104,14 +106,14 @@ function log(message) {
             await page.click('div.ql-send-btn');
             log(`✅ Комментарий к посту #${i + 1} отправлен`);
         } catch (err) {
-            log(`❌ Ошибка при комментировании поста #${i + 1}: ${err}`);
+            log(`❌ Ошибка при комментировании поста #${i + 1}`, err);
         }
 
         try {
             await page.click('div.follow-btn');
             log(`➕ Подписка на автора поста #${i + 1}`);
         } catch (err) {
-            log(`⚠️ Не удалось подписаться на автора поста #${i + 1}: ${err}`);
+            log(`⚠️ Не удалось подписаться на автора поста #${i + 1}`, err);
         }
 
         await page.goBack({ waitUntil: 'networkidle2' });
