@@ -35,3 +35,7 @@ Add:
 
 ✅ Done!
 The script will automatically use your cookie to run daily tasks (check-in, likes, follows, etc.) via GitHub Actions.
+
+
+- Debug on browser 
+`node xiaomi.js`
