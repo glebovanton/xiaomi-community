@@ -1,5 +1,25 @@
 require('dotenv').config();
 const puppeteer = require('puppeteer');
+const fs = require('fs');
+const path = require('path');
+
+const isLocal = process.argv.includes('--log') || process.argv.includes('--local');
+
+// Создание каталога logs/ если режим локальный
+const logDir = path.resolve(__dirname, 'logs');
+if (isLocal && !fs.existsSync(logDir)) fs.mkdirSync(logDir);
+
+// Имя лог-файла по дате
+const logFile = path.join(logDir, `${new Date().toISOString().slice(0, 10)}.log`);
+
+function log(message) {
+    const timestamp = new Date().toISOString();
+    const line = `[${timestamp}] ${message}`;
+    console.log(line);
+    if (isLocal) {
+        fs.appendFileSync(logFile, line + '\n');
+    }
+}
 
 (async () => {
     if (!process.env.CUSERID || !process.env.TOKEN) {
@@ -11,7 +31,7 @@ const puppeteer = require('puppeteer');
         args: ['--no-sandbox'],
         defaultViewport: {
             width: 390,
-            height: 844, // как Redmi Note 12 Pro
+            height: 844, // as Redmi Note 12 Pro
             isMobile: true,
             hasTouch: true
         }
@@ -58,7 +78,7 @@ const puppeteer = require('puppeteer');
             await likeButtons[i].click();
             await new Promise(resolve => setTimeout(resolve, 1000));
         } catch (err) {
-            console.error(`Не удалось лайкнуть пост ${i + 1}`, err);
+            log(`Не удалось лайкнуть пост ${i + 1}`, err);
         }
     }
 
@@ -84,16 +104,16 @@ const puppeteer = require('puppeteer');
             const comment = comments[Math.floor(Math.random() * comments.length)];
             await page.keyboard.type(comment);
             await page.click('div.ql-send-btn');
-            console.log(`✅ Комментарий к посту #${i + 1} отправлен`);
+            log(`✅ Комментарий к посту #${i + 1} отправлен`);
         } catch (err) {
-            console.error(`❌ Ошибка при комментировании поста #${i + 1}`, err);
+            log(`❌ Ошибка при комментировании поста #${i + 1}`, err);
         }
 
         try {
             await page.click('div.follow-btn');
-            console.log(`➕ Подписка на автора поста #${i + 1}`);
+            log(`➕ Подписка на автора поста #${i + 1}`);
         } catch (err) {
-            console.error(`⚠️ Не удалось подписаться на автора поста #${i + 1}`, err);
+            log(`⚠️ Не удалось подписаться на автора поста #${i + 1}`, err);
         }
 
         await page.goBack({ waitUntil: 'networkidle2' });

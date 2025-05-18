@@ -4,7 +4,8 @@
   "description": "Puppeteer script for Xiaomi Community automation",
   "main": "xiaomi.js",
   "scripts": {
-    "start": "node xiaomi.js"
+    "start": "node xiaomi.js --log",
+    "start-no-log": "node xiaomi.js"
   },
   "dependencies": {
     "dotenv": "^16.5.0",
