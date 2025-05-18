@@ -30,14 +30,14 @@ const puppeteer = require('puppeteer');
     // Кликнуть по "Latest post"
     await page.waitForSelector('div.desc', { timeout: 10000 });
     await page.click('div.desc');
-    await page.waitForTimeout(2000);
+    await new Promise(resolve => setTimeout(resolve, 2000));
 
     // Лайкнуть два последних поста
     const likeButtons = await page.$$('div.text-box.icon-like');
     for (let i = 0; i < Math.min(3, likeButtons.length); i++) {
         try {
             await likeButtons[i].click();
-            await page.waitForTimeout(1000);
+            await new Promise(resolve => setTimeout(resolve, 1000));
         } catch (err) {
             console.error(`Не удалось лайкнуть пост ${i + 1}`, err);
         }
@@ -50,11 +50,11 @@ const puppeteer = require('puppeteer');
         const postUrl = `https://c.mi.com${href}`;
 
         await page.goto(postUrl, { waitUntil: 'networkidle2' });
-        await page.waitForTimeout(3000);
+        await new Promise(resolve => setTimeout(resolve, 3000));
 
         // Прокрутка вниз (эмуляция прочтения)
         await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-        await page.waitForTimeout(2000);
+        await new Promise(resolve => setTimeout(resolve, 2000));
 
         // Написать комментарий
         try {
@@ -82,7 +82,7 @@ const puppeteer = require('puppeteer');
 
         // Вернуться назад
         await page.goBack({ waitUntil: 'networkidle2' });
-        await page.waitForTimeout(2000);
+        await new Promise(resolve => setTimeout(resolve, 2000));
     }
 
     await browser.close();
