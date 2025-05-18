@@ -67,11 +67,14 @@ function log(message) {
     // Перейти на главную страницу постов снова после логина
     await page.goto('https://c.mi.com/global/forum-type/ALL', { waitUntil: 'networkidle2' });
 
-    await page.waitForSelector('div.desc', { timeout: 20000 });
-    await page.click('div.desc');
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await page.evaluate(() => window.scrollBy(0, 500));
+    // await page.waitForSelector('div.desc', { timeout: 20000 });
+    // await page.click('div.desc');
+    // await new Promise(resolve => setTimeout(resolve, 2000));
 
-    const likeButtons = await page.$$('div.text-box.icon-like');
+    await page.waitForSelector('div.like-btn', { timeout: 20000 });
+    // const likeButtons = await page.$$('div.text-box.icon-like');
+    const likeButtons = await page.$$('div.like-btn');
     for (let i = 0; i < Math.min(3, likeButtons.length); i++) {
         try {
             await likeButtons[i].click();
@@ -81,42 +84,45 @@ function log(message) {
         }
     }
 
-    const postLinks = await page.$$('a.forumSubLi.item-enter-done');
-    for (let i = 0; i < Math.min(3, postLinks.length); i++) {
-        const href = await postLinks[i].evaluate(a => a.getAttribute('href'));
-        const postUrl = `https://c.mi.com${href}`;
+    // const postLinks = await page.$$('a.forumSubLi.item-enter-done');
+    const postImages = await page.$$('img.thread-img-single');
 
-        await page.goto(postUrl, { waitUntil: 'networkidle2' });
-        await new Promise(resolve => setTimeout(resolve, 3000));
-
-        await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-        await new Promise(resolve => setTimeout(resolve, 2000));
-
+    for (let i = 0; i < Math.min(3, postImages.length); i++) {
         try {
-            await page.click('div.ql-editor');
-            const comments = [
-                'Wow', 'Nice', 'Awesome', 'Cool', 'Great', 'Top', 'Love', 'Thanks', 'Useful', 'Helpful',
-                'Вау', 'Красиво', 'Инфа', 'Супер', 'Годно', 'Лайк', 'Круто', 'Годнота', 'Интересно', 'Полезно',
-                'Неверагодна', 'Цудоўна', 'Класна', 'Дзякуй', 'Прыгожа', 'Шчыра', 'Добра', 'Чудо', 'Залётна', 'Сонечна'
-            ];
-            const comment = comments[Math.floor(Math.random() * comments.length)];
-            await page.keyboard.type(comment);
-            await page.click('div.ql-send-btn');
-            log(`✅ Комментарий к посту #${i + 1} отправлен`);
-        } catch (err) {
-            log(`❌ Ошибка при комментировании поста #${i + 1}: ${err}`);
-        }
+            log(`▶ Кликаем по посту #${i + 1}`);
+            await postImages[i].click();
+            await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 15000 });
+            await new Promise(resolve => setTimeout(resolve, 3000));
 
-        try {
-            await page.click('div.follow-btn');
-            log(`➕ Подписка на автора поста #${i + 1}`);
-        } catch (err) {
-            log(`⚠️ Не удалось подписаться на автора поста #${i + 1}: ${err}`);
-        }
+            await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+            await new Promise(resolve => setTimeout(resolve, 2000));
 
-        await page.goBack({ waitUntil: 'networkidle2' });
-        await new Promise(resolve => setTimeout(resolve, 2000));
+            try {
+                await page.click('textarea.m-reply-box-content-input');
+                const comments = [
+                    'Wow', 'Nice', 'Awesome', 'Cool', 'Great', 'Top', 'Love', 'Thanks', 'Useful', 'Helpful',
+                    'Вау', 'Красиво', 'Инфа', 'Супер', 'Годно', 'Лайк', 'Круто', 'Годнота', 'Интересно', 'Полезно',
+                    'Неверагодна', 'Цудоўна', 'Класна', 'Дзякуй', 'Прыгожа', 'Шчыра', 'Добра', 'Чудо', 'Залётна', 'Сонечна'
+                ];
+                const comment = comments[Math.floor(Math.random() * comments.length)];
+                await page.keyboard.type(comment);
+                await page.click('div.ql-send-btn');
+                log(`✅ Комментарий к посту #${i + 1} отправлен`);
+            } catch (err) {
+                log(`❌ Ошибка при комментировании поста #${i + 1}: ${err}`);
+            }
+
+            try {
+                await page.click('div.follow-btn');
+                log(`➕ Подписка на автора поста #${i + 1}`);
+            } catch (err) {
+                log(`⚠️ Не удалось подписаться на автора поста #${i + 1}: ${err}`);
+            }
+
+            await page.goBack({ waitUntil: 'networkidle2' });
+            await new Promise(resolve => setTimeout(resolve, 2000));
+        } catch (err) {
+            log(`❌ Ошибка при переходе к посту #${i + 1}: ${err}`);
+        }
     }
-
-    await browser.close();
 })();

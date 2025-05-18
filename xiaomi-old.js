@@ -66,7 +66,7 @@ function log(message) {
     // Перейти на главную страницу постов
     await page.goto('https://c.mi.com/global/forum-type/ALL', { waitUntil: 'networkidle2' });
 
-    Кликнуть по "Latest post"
+    // Кликнуть по "Latest post"
     await page.waitForSelector('div.desc', { timeout: 20000 });
     await page.click('div.desc');
     await new Promise(resolve => setTimeout(resolve, 2000));
